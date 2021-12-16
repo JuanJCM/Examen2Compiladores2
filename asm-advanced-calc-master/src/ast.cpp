@@ -253,7 +253,6 @@ string MethodDefinitionStatement::genCode(){
     stringstream sp;
     int currentStackPointer = globalStackPointer;
     sp<<endl<<" addiu $sp, $sp, -"<<currentStackPointer<<endl;
-    code<<retrieveState();
     code<<"addiu $sp, $sp, "<<currentStackPointer<<endl;
     code <<"jr $ra"<<endl;
     string result = code.str();

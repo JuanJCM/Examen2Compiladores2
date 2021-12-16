@@ -187,6 +187,16 @@ void LteExpr::genCode(Code &code){
 }
 
 void EqExpr::genCode(Code &code){
+    Code leftSideCode; 
+    Code rightSideCode;
+    this->expr1->genCode(leftSideCode);
+    this->expr2->genCode(rightSideCode);
+    stringstream ss;
+    releaseRegister(leftSideCode.place);
+    releaseRegister(rightSideCode.place);
+    ss << leftSideCode.code << endl
+    << rightSideCode.code <<endl;
+    code.code = ss.str();
 }
 
 void ReadFloatExpr::genCode(Code &code){
@@ -224,5 +234,29 @@ string ReturnStatement::genCode(){
 }
 
 string MethodDefinitionStatement::genCode(){
-    return "Method definition code generation\n";
+    if(this->stmts.empty())
+        return "";
+    int stackPointer = 4; 
+    globalStackPointer = 0;
+    stringstream code; 
+    code << this->id<<": "<< endl;
+    if(this->params.size() > 0){
+        list<Parameter *>:: iterator it = this->params.begin();
+        for(int i = 0; i< this->params.size(); i++ ){
+            code << "sw $a"<<i<<", "<< stackPointer<<"($sp)"<<endl;
+            stackPointer +=4;
+            globalStackPointer +=4;
+            it++;
+        }
+    }
+    code<< this->stmts.begin()<<endl;
+    stringstream sp;
+    int currentStackPointer = globalStackPointer;
+    sp<<endl<<" addiu $sp, $sp, -"<<currentStackPointer<<endl;
+    code<<retrieveState();
+    code<<"addiu $sp, $sp, "<<currentStackPointer<<endl;
+    code <<"jr $ra"<<endl;
+    string result = code.str();
+    result.insert(id.size() + 2, sp.str());
+    return result;
 }
